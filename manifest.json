@@ -1,0 +1,18 @@
+{
+  "name": "Печенька-Герой",
+  "short_name": "Печенька",
+  "description": "Твой эмоциональный компаньон. Отметь состояние — получи поддержку.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffe9d6",
+  "theme_color": "#f7a86e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/TYkSL8ny/neutral.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

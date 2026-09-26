@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f7a86e">
+<title>Печенька-Герой</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/TYkSL8ny/neutral.jpg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: linear-gradient(180deg, #ffe9d6 0%, #fff7ef 100%);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px; color: #4a3728;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #crumbs-badge {
+    position: fixed; top: 12px; right: 12px; z-index: 10;
+    background: #fff; border: 2px solid #f7a86e; border-radius: 20px;
+    padding: 6px 14px; font-weight: 700; font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    transition: transform .2s;
+  }
+  #crumbs-badge.bump { transform: scale(1.25); }
+  #character-area {
+    margin-top: 40px; width: 180px; height: 180px;
+    border-radius: 24px; overflow: hidden;
+    background: #fff; border: 3px solid #f7a86e;
+    box-shadow: 0 4px 16px rgba(247,168,110,.3);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #character-img { width: 100%; height: 100%; object-fit: cover; }
+  #message {
+    margin-top: 20px; text-align: center; font-size: 20px;
+    font-weight: 600; line-height: 1.4; min-height: 84px;
+    padding: 0 8px;
+  }
+  #emotion-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; width: 100%; max-width: 420px; margin-top: 24px;
+  }
+  .emotion-btn {
+    border: none; border-radius: 20px; padding: 22px 8px;
+    font-size: 17px; font-weight: 700; color: #fff; cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,.12);
+    transition: transform .15s;
+  }
+  .emotion-btn:active { transform: scale(.93); }
+  .btn-anger  { background: #e85d5d; }
+  .btn-sadness{ background: #6a8fd8; }
+  .btn-boredom{ background: #9b7fd4; }
+  #action-panel {
+    width: 100%; max-width: 420px; margin-top: 24px;
+    background: #fff; border-radius: 20px; padding: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1);
+    display: none;
+  }
+  #action-panel.show { display: block; animation: slideUp .35s ease; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; } }
+  #action-text { font-size: 16px; line-height: 1.5; margin-bottom: 16px; }
+  #action-buttons { display: flex; gap: 10px; }
+  #action-buttons button {
+    flex: 1; border: none; border-radius: 14px; padding: 14px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: transform .15s;
+  }
+  #action-buttons button:active { transform: scale(.95); }
+  .btn-yes { background: #7bc47f; color: #fff; }
+  .btn-no  { background: #f0e6dc; color: #4a3728; }
+  #toast {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    background: #4a3728; color: #fff; padding: 12px 20px;
+    border-radius: 14px; font-size: 15px; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+    max-width: 90vw; text-align: center; z-index: 20;
+  }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="crumbs-badge">🍪 <span id="crumbs-count">0</span></div>
+
+<div id="character-area">
+  <img id="character-img" src="https://placehold.co/360x360/ffe9d6/f7a86e?text=Печенька" alt="Печенька">
+</div>
+
+<div id="message">Какая ты сейчас?</div>
+
+<div id="emotion-grid">
+  <button class="emotion-btn btn-anger"   data-emotion="anger">😡<br>Злость</button>
+  <button class="emotion-btn btn-sadness" data-emotion="sadness">😢<br>Грусть</button>
+  <button class="emotion-btn btn-boredom" data-emotion="boredom">😑<br>Скука</button>
+</div>
+
+<div id="action-panel">
+  <div id="action-text"></div>
+  <div id="action-buttons">
+    <button class="btn-yes" id="btn-yes">Давай 💪</button>
+    <button class="btn-no"  id="btn-no">Не сейчас</button>
+  </div>
+</div>
+<button id="btn-home" style="
+  display:none; margin-top:16px; border:none; border-radiuspx;
+  padding:12px 24px; font-size:15px; font-weight:700; cursor:pointer;
+  background:#f0e6dc; color:#4a3728; box-shadow:0 2px 8px rgba(0,0,0,.08);
+">🏠>
+
+<div id="toast"></div>
+
+<script>
+/* ═══ КАРТИНКИ ═══ */
+const IMAGES = {
+  neutral: "https://i.postimg.cc/TYkSL8ny/neutral.jpg",
+  anger:   "https://i.postimg.cc/520hn9fm/anger.jpg",
+  sadness: "https://i.postimg.cc/ZKfgBk6x/sadness.jpg",
+  boredom: "https://i.postimg.cc/HsWRkWc6/boredom.jpg",
+  happy:   "https://i.postimg.cc/c412L1tL/happy.jpg"
+};
+
+/* ═══ КОНТЕНТ ПО ЭМОЦИЯМ ═══ */
+const CONTENT = {
+  anger: {
+    reflect: "Похоже, ты сейчас на взводе… я рядом. Злость — это чистая энергия. Ты сейчас сильная.",
+    action: "Давай разнесём ту задачу, которая бесит больше всего. 10 минут. Я с тобой. 🍪",
+    rewardNo: 2, rewardYes: 5,
+    noMsg: "Окей, горжусь, что ты честно сказала «нет». Отдыхаем. +2 крошки 🍪",
+    yesMsg: "Ура! Ты сделала это! +5 крошек 🍪"
+  },
+  sadness: {
+    reflect: "Похоже, тебе грустно… я рядом. Сегодня можно на минималках, это нормально.",
+    action: "Давай позаботимся о тебе: стакан воды или тёплый душ? Одна маленькая вещь. 🍪",
+    rewardNo: 2, rewardYes: 5,
+    noMsg: "Окей, горжусь, что ты честно сказала «нет». Я просто побуду рядом. +2 крошки 🍪",
+    yesMsg: "Ты позаботилась о себе — это уже победа! +5 крошек 🍪"
+  },
+  boredom: {
+    reflect: "Скучно? Значит, голове нечем заняться. А она любит придумывать.",
+    action: "Давай изобретём что-нибудь глупое? Идея за 5 минут, совсем не серьёзно. 🍪",
+    rewardNo: 2, rewardYes: 5,
+    noMsg: "Окей, горжусь, что ты честно сказала «нет». Скучать тоже полезно. +2 крошки 🍪",
+    yesMsg: "Придумала что-то? Ты молодец! +5 крошек 🍪"
+  }
+};
+
+/* ═══ Крошки силы (LocalStorage) ═══ */
+const STORAGE_KEY = "pechenka_crumbs";
+let crumbs = parseInt(localStorage.getItem(STORAGE_KEY)) || 0;
+const countEl = document.getElementById("crumbs-count");
+countEl.textContent = crumbs;
+
+function addCrumbs(n) {
+  crumbs += n;
+  localStorage.setItem(STORAGE_KEY, crumbs);
+  countEl.textContent = crumbs;
+  const badge = document.getElementById("crumbs-badge");
+  badge.classList.add("bump");
+  setTimeout(() => badge.classList.remove("bump"), 200);
+}
+
+/* ═══ Toast ═══ */
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+/* ═══ Основная логика ═══ */
+const charImg = document.getElementById("character-img");
+const msgEl   = document.getElementById("message");
+const panel   = document.getElementById("action-panel");
+const actionTxt = document.getElementById("action-text");
+let currentEmotion = null;
+
+document.querySelectorAll(".emotion-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentEmotion = btn.dataset.emotion;
+    const data = CONTENT[currentEmotion];
+
+    // 1. Меняем картинку Печеньки
+    charImg.src = IMAGES[currentEmotion];
+
+    // 2. Эмоциональное отражение
+    msgEl.textContent = data.reflect;
+
+    // 3. Панель действия
+    actionTxt.textContent = data.action;
+    panel.classList.add("show");
+  });
+});
+
+document.getElementById("btn-yes").addEventListener("click", () => {
+  const data = CONTENT[currentEmotion];
+  charImg.src = IMAGES.happy;
+  msgEl.textContent = "Ты справляешься! Я верю в тебя.";
+  panel.classList.remove("show");
+  addCrumbs(data.rewardYes);
+  showToast(data.yesMsg);
+  });
+
+document.getElementById("btn-no").addEventListener("click", () => {
+  const data = CONTENT[currentEmotion];
+  panel.classList.remove("show");
+  addCrumbs(data.rewardNo);          // отказ = +2 крошки
+  showToast(data.noMsg);
+});
+
+function reset() {
+  charImg.src = IMAGES.neutral;
+  msgEl.textContent = "Какая ты сейчас?";
+}
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(console.warn);
+}
+</script>
+</body>
+</html>
