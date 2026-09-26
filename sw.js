@@ -1,4 +1,4 @@
-const CACHE_NAME = "pechenka-v1";
+const CACHE_NAME = "pechenka-v2";
 const ASSETS = [
   "./",
   "./index.html",
