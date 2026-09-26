@@ -44,7 +44,8 @@
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 12px; width: 100%; max-width: 420px; margin-top: 24px;
   }
-  . border: none; border-radius: 20px; padding: 22px 8px;
+  .emotion-btn {
+    border: none; border-radius: 20px; padding: 22px 8px;
     font-size: 17px; font-weight: 700; color: #fff; cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,.12);
     transition: transform .15s;
@@ -76,7 +77,7 @@
     padding: 12px 24px; font-size: 15px; font-weight: 700; cursor: pointer;
     background: #f0e6dc; color: #4a3728;
     box-shadow: 0 2px 8px rgba(0,0,0,.08);
- satisfait  transition: transform .15s;
+    transition: transform .15s;
   }
   #btn-home:active { transform: scale(.95); }
   #toast {
@@ -144,7 +145,8 @@ const CONTENT = {
     yesMsg: "Ты позаботилась о себе — это уже победа! +5 крошек 🍪"
   },
   boredom: {
-    reflect: "Скучно? Значит, голове нечем заняться. А она любит придум: "Давай изобретём что-нибудь глупое? Идея за 5 минут, совсем не серьёзно. 🍪",
+    reflect: "Скучно Значит, голове нечем заняться. А она любит придумывать. Дадим ей игрушку?",
+    action: "Давай изобретём что-нибудь глупое? Идея за 5 минут, совсем не серьёзно. 🍪",
     rewardNo: 2, rewardYes: 5,
     noMsg: "Окей, горжусь, что ты честно сказала «нет». Скучать тоже полезно. +2 крошки 🍪",
     yesMsg: "Придумала что-то? Ты молодец! +5 крошек 🍪"
