@@ -44,8 +44,7 @@
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 12px; width: 100%; max-width: 420px; margin-top: 24px;
   }
-  .emotion-btn {
-    border: none; border-radius: 20px; padding: 22px 8px;
+  . border: none; border-radius: 20px; padding: 22px 8px;
     font-size: 17px; font-weight: 700; color: #fff; cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,.12);
     transition: transform .15s;
@@ -72,6 +71,14 @@
   #action-buttons button:active { transform: scale(.95); }
   .btn-yes { background: #7bc47f; color: #fff; }
   .btn-no  { background: #f0e6dc; color: #4a3728; }
+  #btn-home {
+    display: none; margin-top: 16px; border: none; border-radius: 14px;
+    padding: 12px 24px; font-size: 15px; font-weight: 700; cursor: pointer;
+    background: #f0e6dc; color: #4a3728;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+ satisfait  transition: transform .15s;
+  }
+  #btn-home:active { transform: scale(.95); }
   #toast {
     position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
     background: #4a3728; color: #fff; padding: 12px 20px;
@@ -105,11 +112,8 @@
     <button class="btn-no"  id="btn-no">Не сейчас</button>
   </div>
 </div>
-<button id="btn-home" style="
-  display:none; margin-top:16px; border:none; border-radiuspx;
-  padding:12px 24px; font-size:15px; font-weight:700; cursor:pointer;
-  background:#f0e6dc; color:#4a3728; box-shadow:0 2px 8px rgba(0,0,0,.08);
-">🏠>
+
+<button id="btn-home">🏠 В начало</button>
 
 <div id="toast"></div>
 
@@ -140,8 +144,7 @@ const CONTENT = {
     yesMsg: "Ты позаботилась о себе — это уже победа! +5 крошек 🍪"
   },
   boredom: {
-    reflect: "Скучно? Значит, голове нечем заняться. А она любит придумывать.",
-    action: "Давай изобретём что-нибудь глупое? Идея за 5 минут, совсем не серьёзно. 🍪",
+    reflect: "Скучно? Значит, голове нечем заняться. А она любит придум: "Давай изобретём что-нибудь глупое? Идея за 5 минут, совсем не серьёзно. 🍪",
     rewardNo: 2, rewardYes: 5,
     noMsg: "Окей, горжусь, что ты честно сказала «нет». Скучать тоже полезно. +2 крошки 🍪",
     yesMsg: "Придумала что-то? Ты молодец! +5 крошек 🍪"
@@ -176,6 +179,7 @@ const charImg = document.getElementById("character-img");
 const msgEl   = document.getElementById("message");
 const panel   = document.getElementById("action-panel");
 const actionTxt = document.getElementById("action-text");
+const btnHome = document.getElementById("btn-home");
 let currentEmotion = null;
 
 document.querySelectorAll(".emotion-btn").forEach(btn => {
@@ -183,13 +187,8 @@ document.querySelectorAll(".emotion-btn").forEach(btn => {
     currentEmotion = btn.dataset.emotion;
     const data = CONTENT[currentEmotion];
 
-    // 1. Меняем картинку Печеньки
     charImg.src = IMAGES[currentEmotion];
-
-    // 2. Эмоциональное отражение
     msgEl.textContent = data.reflect;
-
-    // 3. Панель действия
     actionTxt.textContent = data.action;
     panel.classList.add("show");
   });
@@ -202,22 +201,39 @@ document.getElementById("btn-yes").addEventListener("click", () => {
   panel.classList.remove("show");
   addCrumbs(data.rewardYes);
   showToast(data.yesMsg);
-  });
+  btnHome.style.display = "inline-block";
+});
 
 document.getElementById("btn-no").addEventListener("click", () => {
   const data = CONTENT[currentEmotion];
   panel.classList.remove("show");
-  addCrumbs(data.rewardNo);          // отказ = +2 крошки
+  addCrumbs(data.rewardNo);
   showToast(data.noMsg);
+  btnHome.style.display = "inline-block";
+});
+
+btnHome.addEventListener("click", () => {
+  reset();
+  btnHome.style.display = "none";
 });
 
 function reset() {
   charImg.src = IMAGES.neutral;
   msgEl.textContent = "Какая ты сейчас?";
 }
+
+/* ═══ Страховка: битая картинка ═══ */
+charImg.addEventListener("error", () => {
+  showToast("Картинка не загрузилась 😔 Проверь ссылку!");
+});
+
+/* ═══ Service Worker ═══ */
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(console.warn);
 }
+
+/* ═══ Стартовое состояние ═══ */
+reset();
 </script>
 </body>
 </html>
